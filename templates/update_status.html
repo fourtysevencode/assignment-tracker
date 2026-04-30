@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Update Status</title>
+
+</head>
+<body>
+    <h1>Update Status</h1>
+    <input type="number" placeholder="id" id="id">
+    <select title="Status">
+        <option label="Yes">Yes</option>
+        <option label="No">No</option>
+    </select>
+    <button id="update">Update</button>
+
+    <p id="result"></p>
+
+    <script>
+        const btn = document.querySelector("#update")
+        const URL = "http://localhost:8000"
+
+        btn.addEventListener("click", async () => {
+            const id = document.querySelector("#id").value
+            const update = document.querySelector("select").value
+            const result = document.querySelector("#result")
+
+            const res = await fetch(`${URL}/update-assignment-status`, {
+                method:"POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    "id":id,
+                    "update":update
+                })
+            })
+            const response = await res.json()
+            result.innerText = response.status
+        })
+    </script>
+</body>
+</html>

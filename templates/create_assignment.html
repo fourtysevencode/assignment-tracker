@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: #e8e8e8;
+            font-family: 'IBM Plex Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #555;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #222;
+        }
+
+        p:not(#result) {
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #444;
+            margin-bottom: 1rem;
+        }
+
+        .input-field {
+            display: block;
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #2a2a2a;
+            color: #e8e8e8;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.85rem;
+            padding: 0.6rem 0;
+            margin-bottom: 1.25rem;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: border-color 0.15s;
+        }
+
+        .input-field:focus {
+            border-bottom-color: #e8e8e8;
+        }
+
+        .input-field::placeholder { color: #333; }
+
+        .input-field option {
+            background: #1a1a1a;
+            color: #e8e8e8;
+        }
+
+        label {
+            display: block;
+            font-size: 0.6rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #444;
+            margin-bottom: 0.35rem;
+        }
+
+        button#create {
+            display: block;
+            width: 100%;
+            margin-top: 2rem;
+            padding: 0.75rem;
+            background: #e8e8e8;
+            color: #0f0f0f;
+            border: none;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        button#create:hover { background: #fff; }
+
+        #result {
+            margin-top: 1.25rem;
+            font-size: 0.7rem;
+            color: #555;
+            letter-spacing: 0.05em;
+            min-height: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; max-width: 360px;">
+        <h1>Assignment Tracker</h1>
+
+        <p>Create an Assignment:</p>
+        <input type="text" class="input-field" id="assignment" placeholder="assignment">
+
+        <label for="assign-to">Assign To:</label>
+        <select class="input-field" id="assign-to" name="assign_to">
+            <option value="" disabled selected>Select a person</option>
+            <option value="George">George</option>
+            <option value="Ananya">Ananya</option>
+            <option value="Varun">Varun</option>
+            <option value="Rachel">Rachel</option>
+        </select>
+
+        <label for="priority">Priority:</label>
+        <select class="input-field" id="priority" name="priority">
+            <option value="" disabled selected>Priority</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+        </select>
+
+        <button id="create">Create</button>
+
+        <p id="result"></p>
+    </div>
+
+    <script>
+
+        const btn = document.querySelector("#create");
+        const URL = "http://localhost:8000";
+        const result = document.querySelector("#result");
+
+        btn.addEventListener("click", async () => {
+
+            const assignment = document.querySelector("#assignment").value;
+            const assign_to = document.querySelector("#assign-to").value;
+            const priority = document.querySelector("#priority").value;
+
+            try {
+                const res = await fetch(`${URL}/new-assignment`, {
+                    method: "POST", 
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        assignment: assignment,
+                        assign_to: assign_to,
+                        priority: priority,
+                    })
+                });
+
+                const response = await res.json();
+                if (response.status) {
+                    result.innerText = response.status
+                } else {
+                    result.innerText = "no status message received, validate update on google sheet manually"
+                }
+                
+            } catch (error) {
+                result.innerText = "Error: " + error.message;
+            }
+        });
+
+    </script>
+</body>
+</html>
