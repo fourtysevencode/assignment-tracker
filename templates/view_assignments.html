@@ -5,6 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>View Assignments — Assignment Tracker</title>
   <link rel="stylesheet" href="/static/style.css">
+  <style>
+    /* Mark-as-done button inside card */
+    .btn-done {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text-muted);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-done:hover:not(:disabled) {
+      background: var(--color-success-bg);
+      color: var(--color-success);
+      border-color: #bbf7d0;
+    }
+    .btn-done:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-done.is-done {
+      background: var(--color-success-bg);
+      color: var(--color-success);
+      border-color: #bbf7d0;
+    }
+
+    /* Card layout: stack on very narrow screens */
+    .assignment-item {
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .a-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .a-id {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      font-weight: 600;
+      background: var(--color-bg);
+      border: 1px solid var(--color-border-light);
+      border-radius: 4px;
+      padding: 2px 7px;
+    }
+    @media (max-width: 480px) {
+      .a-right { width: 100%; justify-content: flex-end; }
+    }
+  </style>
 </head>
 <body>
 
@@ -30,7 +88,7 @@
   <main>
     <div class="page-header">
       <h1>View Assignments</h1>
-      <p>Enter your name to see all assignments assigned to you.</p>
+      <p>Select your name to see your assignments, their priority, status, and mark them done.</p>
     </div>
 
     <div class="card">
@@ -46,7 +104,6 @@
       </div>
 
       <button class="btn btn-primary btn-full" id="fetch">Fetch Assignments</button>
-
       <div class="status-msg" id="errorMsg"></div>
     </div>
 
@@ -57,6 +114,7 @@
   </main>
 
   <script>
+    // Nav toggle
     const toggle = document.getElementById('navToggle');
     const navLinks = document.getElementById('navLinks');
     toggle.addEventListener('click', () => navLinks.classList.toggle('open'));
@@ -67,115 +125,114 @@
     const resultsArea = document.getElementById('resultsArea');
     const list        = document.getElementById('assignmentList');
     const label       = document.getElementById('resultsLabel');
-    const URL         = window.location.origin;
+    const BASE        = window.location.origin;
 
     function showError(text) {
       errorMsg.textContent = text;
       errorMsg.className = 'status-msg visible error';
     }
 
-    function priorityClass(p) {
-      const map = { High: 'priority-high', Medium: 'priority-medium', Low: 'priority-low' };
-      return map[p] || '';
-    }
-
-    async function fetchPriority(title) {
-      try {
-        const res = await fetch(`${URL}/get-priority`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ assignment: title })
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data.priority || null;
-      } catch {
-        return null;
-      }
-    }
-
     function priorityBadge(p) {
       const map = {
-        High:   { cls: 'priority-high',   label: 'High' },
-        Medium: { cls: 'priority-medium', label: 'Medium' },
-        Low:    { cls: 'priority-low',    label: 'Low' },
+        High:   'priority-high',
+        Medium: 'priority-medium',
+        Low:    'priority-low',
       };
-      const entry = map[p];
-      if (!entry) return '';
-      return `<span class="priority-badge ${entry.cls}">${entry.label}</span>`;
+      const cls = map[p];
+      if (!cls) return '<span style="color:var(--color-text-muted)">—</span>';
+      return `<span class="priority-badge ${cls}">${p}</span>`;
+    }
+
+    function statusBadge(completed) {
+      const done = completed === 'Yes' || completed === true;
+      return done
+        ? `<span class="a-status done">Done</span>`
+        : `<span class="a-status pending">Pending</span>`;
+    }
+
+    async function markDone(id, btn, statusEl) {
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${BASE}/update-assignment-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: parseInt(id), update: 'Yes' })
+        });
+        if (!res.ok) throw new Error(`Server error ${res.status}`);
+        // Update UI
+        statusEl.outerHTML = `<span class="a-status done">Done</span>`;
+        btn.textContent = '✓ Done';
+        btn.classList.add('is-done');
+        btn.disabled = true;
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Mark as Done';
+        alert('Failed to update: ' + err.message);
+      }
     }
 
     btn.addEventListener('click', async () => {
       const name = document.getElementById('name').value.trim();
-
-      if (!name) {
-        showError('Please select your name.');
-        return;
-      }
+      if (!name) { showError('Please select your name.'); return; }
 
       errorMsg.className = 'status-msg';
       resultsArea.style.display = 'none';
+      list.innerHTML = '';
       btn.disabled = true;
       btn.textContent = 'Fetching…';
 
       try {
-        const res = await fetch(`${URL}/view_assignments`, {
+        const res = await fetch(`${BASE}/view-assignments-full`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name })
         });
-
         if (!res.ok) throw new Error(`Server error ${res.status}`);
 
         const data = await res.json();
         const assignments = data.assignments;
 
-        list.innerHTML = '';
-
-        const isEmpty = !assignments ||
-          (Array.isArray(assignments) && assignments.length === 0) ||
-          (typeof assignments === 'string' && assignments.trim() === '');
-
-        if (isEmpty) {
+        if (!assignments || assignments.length === 0) {
           label.textContent = `No assignments found for ${name}`;
           resultsArea.style.display = 'block';
           return;
         }
 
-        const items = Array.isArray(assignments)
-          ? assignments
-          : assignments.split('\n').map(s => s.trim()).filter(Boolean);
+        label.textContent = `${assignments.length} assignment${assignments.length !== 1 ? 's' : ''} for ${name}`;
 
-        label.textContent = `${items.length} assignment${items.length !== 1 ? 's' : ''} for ${name}`;
-
-        // Render cards immediately with a loading placeholder for priority
-        const cardEls = items.map((title, idx) => {
+        assignments.forEach(a => {
+          const isDone = a.completed === 'Yes' || a.completed === true;
           const item = document.createElement('div');
           item.className = 'assignment-item';
           item.innerHTML = `
             <div class="a-meta">
-              <div class="a-title">${title || '(unnamed)'}</div>
-              <div class="a-details">
-                Priority: <span class="prio-placeholder" style="color:var(--color-text-muted);font-size:0.8rem;">loading…</span>
+              <div class="a-title">${a.assignment || '(unnamed)'}</div>
+              <div class="a-details" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;">
+                ${priorityBadge(a.priority)}
+                ${statusBadge(a.completed)}
               </div>
             </div>
+            <div class="a-right">
+              <span class="a-id">ID: ${a.id || '—'}</span>
+              <button class="btn-done ${isDone ? 'is-done' : ''}" ${isDone ? 'disabled' : ''} data-id="${a.id}">
+                ${isDone ? '✓ Done' : 'Mark as Done'}
+              </button>
+            </div>
           `;
+
+          if (!isDone) {
+            const doneBtn = item.querySelector('.btn-done');
+            doneBtn.addEventListener('click', () => {
+              const statusEl = item.querySelector('.a-status');
+              markDone(a.id, doneBtn, statusEl);
+            });
+          }
+
           list.appendChild(item);
-          return { item, title };
         });
 
         resultsArea.style.display = 'block';
-
-        // Fetch all priorities in parallel, then update each card
-        const priorities = await Promise.all(cardEls.map(({ title }) => fetchPriority(title)));
-
-        cardEls.forEach(({ item }, idx) => {
-          const p = priorities[idx];
-          const placeholder = item.querySelector('.prio-placeholder');
-          if (placeholder) {
-            placeholder.outerHTML = p ? priorityBadge(p) : '<span style="color:var(--color-text-muted)">—</span>';
-          }
-        });
 
       } catch (err) {
         showError(err.message || 'Something went wrong.');

@@ -78,3 +78,7 @@ async def suggest_assignment_priority(payload: priority_suggestion_request):
 async def get_priority(assignment: assignment_info):
     assignment_text = assignment.assignment
     return sheet.get_priority(assignment_text)
+@app.post("/view-assignments-full")
+async def view_full(name: name):
+    assignments = sheet.find_assignments_full(name.name)
+    return {"assignments": assignments}

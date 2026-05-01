@@ -40,5 +40,18 @@ class Sheet:
 
         else:
             return {"priority":"no priority found"}
-        
-    
+
+    def find_assignments_full(self, name):
+        ws = self.ws
+        cell_list = ws.findall(name, in_column=3)
+        rows = [cell.row for cell in cell_list]
+        results = []
+        for row in rows:
+            row_data = ws.row_values(row)
+            results.append({
+                "id":         row_data[0] if len(row_data) > 0 else "",
+                "assignment": row_data[1] if len(row_data) > 1 else "",
+                "priority":   row_data[3] if len(row_data) > 3 else "",
+                "completed":  row_data[5] if len(row_data) > 5 else "No",
+            })
+        return results
