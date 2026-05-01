@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.staticfiles import StaticFiles
 from utils.spreadsheet import Sheet
 from utils.gemini import suggest_priority
 from pydantic import BaseModel
@@ -7,6 +8,9 @@ from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
 sheet = Sheet()
+
+# Serve CSS/JS from templates/static at the /static URL path
+app.mount("/static", StaticFiles(directory="templates/static"), name="static")
 
 templates = Jinja2Templates(directory="templates")
 
@@ -23,6 +27,9 @@ class name(BaseModel):
     name: str
 
 class priority_suggestion_request(BaseModel):
+    assignment: str
+
+class assignment_info(BaseModel): # to avoid confusion
     assignment: str
 
 @app.get("/", response_class=HTMLResponse) # HTML response, not json
@@ -66,3 +73,8 @@ async def suggest_assignment_priority(payload: priority_suggestion_request):
     except RuntimeError as exc:
         status_code = 500 if "GEMINI_API_KEY" in str(exc) else 502
         raise HTTPException(status_code=status_code, detail=str(exc)) from exc
+
+@app.post("/get-priority")
+async def get_priority(assignment: assignment_info):
+    assignment_text = assignment.assignment
+    return sheet.get_priority(assignment_text)

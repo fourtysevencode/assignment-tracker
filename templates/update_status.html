@@ -1,89 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Update Status</title>
-        <style>
-
-            body {
-                margin: 0;
-                padding: 0 60px;
-            }
-
-            nav {
-                display: flex;
-                unicode-bidi: isolate;
-                justify-content: center;
-                border-bottom: 1px solid #bbbbbb;
-                padding: 20px 0;
-            }
-
-            nav a {
-                margin: 0 15px;
-                text-decoration: none;
-                font-weight:400;
-                color:#000000;
-                transition: all ease 0.2s;
-                padding-top:20px;
-                font-size: 25px;
-                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
-            }
-
-            nav a:hover {
-                color:#b4b4b4
-            }
-
-            h1 {
-                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
-                font-size: 50px;
-                padding: 50px
-            }
-
-            h2 {
-                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
-                font-size: 40px;
-                padding: 50px
-            }
-        </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Status — Assignment Tracker</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <nav>
-        <a href = "/">Home</a>
-        <a href="/create-assignment">Create an Asignment</a>
-        <a href="/update-status">Update Status</a>
+
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">📋 Assignment Tracker</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6"  x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="/">Home</a>
+        <a href="/create-assignment">Create</a>
+        <a href="/update-status" class="active">Update Status</a>
         <a href="/view-assignments">View Assignments</a>
-    </nav>
-    <h1>Update Status</h1>
-    <input type="number" placeholder="id" id="id">
-    <select title="Status">
-        <option label="Yes">Yes</option>
-        <option label="No">No</option>
-    </select>
-    <button id="update">Update</button>
+      </div>
+    </div>
+  </nav>
 
-    <p id="result"></p>
+  <main>
+    <div class="page-header">
+      <h1>Update Status</h1>
+      <p>Enter the assignment ID and mark it as complete or incomplete.</p>
+    </div>
 
-    <script>
-        const btn = document.querySelector("#update")
-        const URL = "http://localhost:8000"
+    <div class="card">
 
-        btn.addEventListener("click", async () => {
-            const id = document.querySelector("#id").value
-            const update = document.querySelector("select").value
-            const result = document.querySelector("#result")
+      <div class="form-group">
+        <label for="id">Assignment ID</label>
+        <input type="number" id="id" placeholder="e.g. 4" min="1">
+      </div>
 
-            const res = await fetch(`${URL}/update-assignment-status`, {
-                method:"POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    "id":id,
-                    "update":update
-                })
-            })
-            const response = await res.json()
-            result.innerText = response.status
-        })
-    </script>
+      <div class="form-group">
+        <label for="statusSelect">Completion Status</label>
+        <select id="statusSelect" title="Status">
+          <option value="" disabled selected>Select status</option>
+          <option value="Yes">✅ Completed</option>
+          <option value="No">🔄 Not Completed</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="update">Update Status</button>
+
+      <div class="status-msg" id="result"></div>
+    </div>
+  </main>
+
+  <script>
+    const toggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    toggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+    const btn    = document.getElementById('update');
+    const result = document.getElementById('result');
+    const URL    = window.location.origin;
+
+    function showResult(text, type) {
+      result.textContent = text;
+      result.className = 'status-msg visible ' + type;
+    }
+
+    btn.addEventListener('click', async () => {
+      const id     = document.getElementById('id').value.trim();
+      const update = document.getElementById('statusSelect').value;
+
+      if (!id || !update) {
+        showResult('Please enter an ID and select a status.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Updating…';
+
+      try {
+        const res = await fetch(`${URL}/update-assignment-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: parseInt(id), update })
+        });
+
+        const data = await res.json();
+        showResult(data.status || 'Status updated.', 'success');
+      } catch (err) {
+        showResult('Error: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Update Status';
+      }
+    });
+  </script>
+
 </body>
 </html>

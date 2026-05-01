@@ -29,3 +29,16 @@ class Sheet:
         all_tasks = ws.col_values(2)
         assignments = [all_tasks[row - 1] for row in rows] # Extract values using 0-based indexing
         return assignments
+    
+    def get_priority(self, assignment:str):
+        ws = self.ws
+        cell= ws.find(assignment, in_column=2)
+        
+        if cell:
+            priority = ws.cell(cell.row, 4).value
+            return {"priority":priority}
+
+        else:
+            return {"priority":"no priority found"}
+        
+    

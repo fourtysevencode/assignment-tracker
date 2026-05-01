@@ -1,168 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignment Tracker</title>
-        <style>
-
-            body {
-                margin: 0;
-                padding: 0 60px;
-            }
-
-            nav {
-                display: flex;
-                unicode-bidi: isolate;
-                justify-content: center;
-                border-bottom: 1px solid #bbbbbb;
-                padding: 20px 0;
-            }
-
-            nav a {
-                margin: 0 15px;
-                text-decoration: none;
-                font-weight:400;
-                color:#000000;
-                transition: all ease 0.2s;
-                padding-top:20px;
-                font-size: 25px;
-                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
-            }
-
-            nav a:hover {
-                color:#b4b4b4
-            }
-
-            h1 {
-                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
-                font-size: 50px;
-                padding: 50px
-            }
-
-            h2 {
-                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
-                font-size: 40px;
-                padding: 50px
-            }
-
-        </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Assignment — Assignment Tracker</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <nav>
-        <a href = "/">Home</a>
-        <a href="/create-assignment">Create an Asignment</a>
+
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">📋 Assignment Tracker</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6"  x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="nav-links" id="navLinks">
+        <a href="/">Home</a>
+        <a href="/create-assignment" class="active">Create</a>
         <a href="/update-status">Update Status</a>
         <a href="/view-assignments">View Assignments</a>
-    </nav>
-    <div style="width: 100%; max-width: 360px;">
-        <h1>Assignment Tracker</h1>
+      </div>
+    </div>
+  </nav>
 
-        <p>Create an Assignment:</p>
-        <input type="text" class="input-field" id="assignment" placeholder="assignment">
-
-        <label for="assign-to">Assign To:</label>
-        <select class="input-field" id="assign-to" name="assign_to">
-            <option value="" disabled selected>Select a person</option>
-            <option value="George">George</option>
-            <option value="Ananya">Ananya</option>
-            <option value="Varun">Varun</option>
-            <option value="Rachel">Rachel</option>
-        </select>
-
-        <label for="priority">Priority:</label>
-        <select class="input-field" id="priority" name="priority">
-            <option value="" disabled selected>Priority</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-        </select>
-
-        <button id="suggest-priority">Suggest Priority</button>
-        <button id="create">Create</button>
-
-        <p id="result"></p>
-        <p id="suggestion-result"></p>
-        <p id="suggestion-reason"></p>
+  <main>
+    <div class="page-header">
+      <h1>Create Assignment</h1>
+      <p>Fill in the details below. Use AI to suggest a priority, then confirm and submit.</p>
     </div>
 
-    <script>
+    <div class="card">
 
-        const btn = document.querySelector("#create");
-        const suggestBtn = document.querySelector("#suggest-priority");
-        const URL = window.location.origin;
-        const result = document.querySelector("#result");
-        const suggestionResult = document.querySelector("#suggestion-result");
-        const suggestionReason = document.querySelector("#suggestion-reason");
-        const assignmentInput = document.querySelector("#assignment");
-        const prioritySelect = document.querySelector("#priority");
+      <!-- Assignment Name -->
+      <div class="form-group">
+        <label for="assignment">Assignment</label>
+        <input type="text" id="assignment" placeholder="Create backend logic for the dashboard">
+      </div>
 
-        suggestBtn.addEventListener("click", async () => {
-            const assignment = assignmentInput.value.trim();
-            if (!assignment) {
-                suggestionResult.innerText = "Please enter an assignment first.";
-                suggestionReason.innerText = "";
-                return;
-            }
+      <!-- Assign To -->
+      <div class="form-group">
+        <label for="assign-to">Assign To</label>
+        <select id="assign-to">
+          <option value="" disabled selected>Select a person</option>
+          <option value="George">George</option>
+          <option value="Ananya">Ananya</option>
+          <option value="Varun">Varun</option>
+          <option value="Rachel">Rachel</option>
+        </select>
+      </div>
 
-            suggestionResult.innerText = "Getting priority suggestion...";
-            suggestionReason.innerText = "";
-            try {
-                const res = await fetch(`${URL}/suggest-priority`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        assignment: assignment
-                    })
-                });
+      <hr class="divider">
 
-                const response = await res.json();
-                if (!res.ok) {
-                    suggestionResult.innerText = response.detail || "Could not get priority suggestion.";
-                    return;
-                }
+      <!-- Priority section -->
+      <div class="section-label">Priority</div>
 
-                prioritySelect.value = response.priority;
-                suggestionResult.innerText = `Suggested priority: ${response.priority}`;
-                suggestionReason.innerText = `Reason: ${response.reason}`;
-            } catch (error) {
-                suggestionResult.innerText = "Error: " + error.message;
-            }
+      <!-- Visual priority picker -->
+      <div class="priority-options" id="priorityOptions">
+        <button type="button" class="priority-option" data-value="High">
+          <span class="dot"></span>High
+        </button>
+        <button type="button" class="priority-option" data-value="Medium">
+          <span class="dot"></span>Medium
+        </button>
+        <button type="button" class="priority-option" data-value="Low">
+          <span class="dot"></span>Low
+        </button>
+      </div>
+
+      <!-- Hidden select synced to visual picker (keeps backend-compatible value) -->
+      <select id="priority">
+        <option value="" disabled selected></option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+
+      <!-- AI Suggestion -->
+      <div class="suggestion-box" id="suggestionBox">
+        <div class="suggestion-label">
+          <span>✦</span> AI Priority Suggestion
+        </div>
+        <div class="suggestion-priority" id="suggestionPriority"></div>
+        <div class="suggestion-reason" id="suggestionReason"></div>
+        <div class="suggestion-apply" id="suggestionApply" style="display:none;">
+          ✓ Applied to priority above
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Actions -->
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="suggest-priority">
+          ✦ Suggest Priority
+        </button>
+        <button class="btn btn-primary" id="create">
+          Create Assignment
+        </button>
+      </div>
+
+      <div class="status-msg" id="result"></div>
+    </div>
+  </main>
+
+  <script>
+    // Nav toggle
+    const toggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    toggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
+
+    // ---- Priority picker ----
+    const priorityOptions = document.querySelectorAll('.priority-option');
+    const prioritySelect  = document.getElementById('priority');
+
+    function selectPriority(value) {
+      priorityOptions.forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.value === value);
+      });
+      prioritySelect.value = value;
+    }
+
+    priorityOptions.forEach(btn => {
+      btn.addEventListener('click', () => selectPriority(btn.dataset.value));
+    });
+
+    // ---- DOM refs ----
+    const createBtn      = document.getElementById('create');
+    const suggestBtn     = document.getElementById('suggest-priority');
+    const assignmentInput = document.getElementById('assignment');
+    const resultBox      = document.getElementById('result');
+    const suggestionBox  = document.getElementById('suggestionBox');
+    const suggestionPrio = document.getElementById('suggestionPriority');
+    const suggestionRsn  = document.getElementById('suggestionReason');
+    const suggestionApply = document.getElementById('suggestionApply');
+    const URL            = window.location.origin;
+
+    function showResult(text, type) {
+      resultBox.textContent = text;
+      resultBox.className = 'status-msg visible ' + type;
+    }
+
+    // ---- Suggest Priority ----
+    suggestBtn.addEventListener('click', async () => {
+      const assignment = assignmentInput.value.trim();
+      if (!assignment) {
+        showResult('Please enter an assignment name first.', 'error');
+        return;
+      }
+
+      // Show loading state in suggestion box
+      suggestionBox.classList.add('visible');
+      suggestionPrio.innerHTML = '<span class="spinner"></span>';
+      suggestionRsn.textContent = 'Analysing assignment…';
+      suggestionApply.style.display = 'none';
+      suggestBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${URL}/suggest-priority`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assignment })
         });
 
-        btn.addEventListener("click", async () => {
+        const data = await res.json();
 
-            const assignment = assignmentInput.value;
-            const assign_to = document.querySelector("#assign-to").value;
-            const priority = prioritySelect.value;
+        if (!res.ok) {
+          suggestionPrio.textContent = 'Could not get suggestion.';
+          suggestionRsn.textContent = data.detail || 'Unknown error.';
+          return;
+        }
 
-            try {
-                const res = await fetch(`${URL}/new-assignment`, {
-                    method: "POST", 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        assignment: assignment,
-                        assign_to: assign_to,
-                        priority: priority,
-                    })
-                });
+        const prio = data.priority;
+        const colorMap = { High: '#dc2626', Medium: '#d97706', Low: '#16a34a' };
 
-                const response = await res.json();
-                if (response.status) {
-                    result.innerText = response.status
-                } else {
-                    result.innerText = "no status message received, validate update on google sheet manually"
-                }
-                
-            } catch (error) {
-                result.innerText = "Error: " + error.message;
-            }
+        suggestionPrio.innerHTML = `<span style="color:${colorMap[prio] || '#111'}; font-size:1.1rem;">${prio}</span>`;
+        suggestionRsn.textContent = data.reason || '';
+
+        // Auto-apply suggestion to picker
+        selectPriority(prio);
+        suggestionApply.style.display = 'flex';
+
+      } catch (err) {
+        suggestionPrio.textContent = 'Error';
+        suggestionRsn.textContent = err.message;
+      } finally {
+        suggestBtn.disabled = false;
+      }
+    });
+
+    // ---- Create Assignment ----
+    createBtn.addEventListener('click', async () => {
+      const assignment = assignmentInput.value.trim();
+      const assign_to  = document.getElementById('assign-to').value;
+      const priority   = prioritySelect.value;
+
+      if (!assignment || !assign_to || !priority) {
+        showResult('Please fill in all fields before creating.', 'error');
+        return;
+      }
+
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creating…';
+
+      try {
+        const res = await fetch(`${URL}/new-assignment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assignment, assign_to, priority })
         });
 
-    </script>
+        const data = await res.json();
+        showResult(data.status || 'Created — verify on the sheet if no ID shown.', 'success');
+
+        // Reset form
+        assignmentInput.value = '';
+        document.getElementById('assign-to').value = '';
+        prioritySelect.value = '';
+        priorityOptions.forEach(b => b.classList.remove('selected'));
+        suggestionBox.classList.remove('visible');
+
+      } catch (err) {
+        showResult('Error: ' + err.message, 'error');
+      } finally {
+        createBtn.disabled = false;
+        createBtn.textContent = 'Create Assignment';
+      }
+    });
+  </script>
+
 </body>
 </html>
