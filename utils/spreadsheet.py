@@ -2,8 +2,11 @@ import gspread
 from datetime import date
 
 class Sheet:
-    def __init__(self):
-        gc = gspread.service_account(filename=r"utils\assignment-tracker-494911-53d08f71bab7.json")
+    def __init__(self, service_account_info=None):
+        if service_account_info is not None:
+            gc = gspread.service_account_from_dict(service_account_info)
+        else:
+            gc = gspread.service_account(filename="utils/assignment-tracker-494911-53d08f71bab7.json")
         self.ws = gc.open("assignments-sheet").sheet1
 
     def new_assignment(self, assignment, name, priority):

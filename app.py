@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.staticfiles import StaticFiles
 from utils.spreadsheet import Sheet
@@ -5,9 +7,44 @@ from utils.gemini import suggest_priority
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+def _service_account_from_env():
+    env_to_key = {
+        "GOOGLE_SERVICE_ACCOUNT_TYPE": "type",
+        "GOOGLE_SERVICE_ACCOUNT_PROJECT_ID": "project_id",
+        "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY_ID": "private_key_id",
+        "GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY": "private_key",
+        "GOOGLE_SERVICE_ACCOUNT_CLIENT_EMAIL": "client_email",
+        "GOOGLE_SERVICE_ACCOUNT_CLIENT_ID": "client_id",
+        "GOOGLE_SERVICE_ACCOUNT_AUTH_URI": "auth_uri",
+        "GOOGLE_SERVICE_ACCOUNT_TOKEN_URI": "token_uri",
+        "GOOGLE_SERVICE_ACCOUNT_AUTH_PROVIDER_X509_CERT_URL": "auth_provider_x509_cert_url",
+        "GOOGLE_SERVICE_ACCOUNT_CLIENT_X509_CERT_URL": "client_x509_cert_url",
+        "GOOGLE_SERVICE_ACCOUNT_UNIVERSE_DOMAIN": "universe_domain",
+    }
+
+    missing = []
+    service_account = {}
+    for env_name, json_key in env_to_key.items():
+        value = os.getenv(env_name)
+        if not value:
+            missing.append(env_name)
+            continue
+        service_account[json_key] = value
+
+    if missing:
+        missing_vars = ", ".join(missing)
+        raise RuntimeError(f"Missing required Google service account environment variables: {missing_vars}")
+
+    service_account["private_key"] = service_account["private_key"].replace("\\n", "\n")
+    return service_account
 
 app = FastAPI()
-sheet = Sheet()
+sheet = Sheet(service_account_info=_service_account_from_env())
 
 # Serve CSS/JS from templates/static at the /static URL path
 app.mount("/static", StaticFiles(directory="templates/static"), name="static")
@@ -78,6 +115,7 @@ async def suggest_assignment_priority(payload: priority_suggestion_request):
 async def get_priority(assignment: assignment_info):
     assignment_text = assignment.assignment
     return sheet.get_priority(assignment_text)
+
 @app.post("/view-assignments-full")
 async def view_full(name: name):
     assignments = sheet.find_assignments_full(name.name)
