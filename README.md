@@ -6,14 +6,14 @@ A FastAPI + Google Sheets assignment management app with a web UI and Gemini-pow
 
 ```mermaid
 flowchart TD
-    U[Browser UI<br/>Jinja templates + JS] -->|HTTP| A[FastAPI app<br/>app.py]
-    A -->|Render pages| T[templates/*.html]
-    A -->|Static assets| S[templates/static/style.css]
-    A -->|CRUD assignment data| G[utils/spreadsheet.py<br/>gspread]
-    G -->|Google API| GS[(Google Sheet: assignments-sheet)]
-    A -->|Priority suggestion| M[utils/gemini.py]
-    M -->|generateContent API| GM[(Gemini API)]
-    A --> E[Environment Variables (.env)]
+    U["Browser UI - Jinja templates and JS"] -->|HTTP| A["FastAPI app - app.py"]
+    A -->|Render pages| T["templates/*.html"]
+    A -->|Static assets| S["templates/static/style.css"]
+    A -->|CRUD assignment data| G["utils/spreadsheet.py - gspread"]
+    G -->|Google API| GS["Google Sheet: assignments-sheet"]
+    A -->|Priority suggestion| M["utils/gemini.py"]
+    M -->|generateContent API| GM["Gemini API"]
+    A --> E["Environment variables via .env"]
 ```
 
 ## Project structure
