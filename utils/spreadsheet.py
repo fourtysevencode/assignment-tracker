@@ -21,3 +21,11 @@ class Sheet:
         row_number = cell.row
         self.ws.update_cell(row_number, 6, "Yes" if status else "No")
         return "Updated successfully"
+    
+    def find_assignments(self, name):
+        ws = self.ws
+        cell_list = ws.findall(name, in_column=3)
+        rows = [cell.row for cell in cell_list]
+        all_tasks = ws.col_values(2)
+        assignments = [all_tasks[row - 1] for row in rows] # Extract values using 0-based indexing
+        return assignments

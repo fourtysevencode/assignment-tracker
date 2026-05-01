@@ -4,110 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Assignment Tracker</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
+        <style>
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+            body {
+                margin: 0;
+                padding: 0 60px;
+            }
 
-        body {
-            background: #0f0f0f;
-            color: #e8e8e8;
-            font-family: 'IBM Plex Mono', monospace;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
+            nav {
+                display: flex;
+                unicode-bidi: isolate;
+                justify-content: center;
+                border-bottom: 1px solid #bbbbbb;
+                padding: 20px 0;
+            }
 
-        h1 {
-            font-size: 0.75rem;
-            font-weight: 500;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #555;
-            margin-bottom: 2.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #222;
-        }
+            nav a {
+                margin: 0 15px;
+                text-decoration: none;
+                font-weight:400;
+                color:#000000;
+                transition: all ease 0.2s;
+                padding-top:20px;
+                font-size: 25px;
+                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+            }
 
-        p:not(#result) {
-            font-size: 0.65rem;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: #444;
-            margin-bottom: 1rem;
-        }
+            nav a:hover {
+                color:#b4b4b4
+            }
 
-        .input-field {
-            display: block;
-            width: 100%;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid #2a2a2a;
-            color: #e8e8e8;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.85rem;
-            padding: 0.6rem 0;
-            margin-bottom: 1.25rem;
-            outline: none;
-            appearance: none;
-            -webkit-appearance: none;
-            transition: border-color 0.15s;
-        }
+            h1 {
+                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
+                font-size: 50px;
+                padding: 50px
+            }
 
-        .input-field:focus {
-            border-bottom-color: #e8e8e8;
-        }
+            h2 {
+                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
+                font-size: 40px;
+                padding: 50px
+            }
 
-        .input-field::placeholder { color: #333; }
-
-        .input-field option {
-            background: #1a1a1a;
-            color: #e8e8e8;
-        }
-
-        label {
-            display: block;
-            font-size: 0.6rem;
-            letter-spacing: 0.18em;
-            text-transform: uppercase;
-            color: #444;
-            margin-bottom: 0.35rem;
-        }
-
-        button#create {
-            display: block;
-            width: 100%;
-            margin-top: 2rem;
-            padding: 0.75rem;
-            background: #e8e8e8;
-            color: #0f0f0f;
-            border: none;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.7rem;
-            font-weight: 500;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            cursor: pointer;
-        }
-
-        button#create:hover { background: #fff; }
-
-        #result {
-            margin-top: 1.25rem;
-            font-size: 0.7rem;
-            color: #555;
-            letter-spacing: 0.05em;
-            min-height: 1rem;
-        }
-    </style>
+        </style>
 </head>
 <body>
+    <nav>
+        <a href = "/">Home</a>
+        <a href="/create-assignment">Create an Asignment</a>
+        <a href="/update-status">Update Status</a>
+        <a href="/view-assignments">View Assignments</a>
+    </nav>
     <div style="width: 100%; max-width: 360px;">
         <h1>Assignment Tracker</h1>
 

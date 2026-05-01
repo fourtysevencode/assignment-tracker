@@ -18,6 +18,9 @@ class assignment_update(BaseModel):
     id: int
     update: str
 
+class name(BaseModel):
+    name: str
+
 @app.get("/", response_class=HTMLResponse) # HTML response, not json
 async def home(request: Request):
     return templates.TemplateResponse(request, "index.html")
@@ -30,6 +33,10 @@ async def home(request: Request):
 async def update_status_page(request: Request):
     return templates.TemplateResponse(request, "update_status.html")
 
+@app.get("/view-assignments", response_class=HTMLResponse) # HTML response, not json
+async def view_assignments(request: Request):
+    return templates.TemplateResponse(request, "view_assignments.html")
+
 @app.post("/new-assignment")
 async def create_assignment(assignment: new_assgnment):
     status = sheet.new_assignment(assignment.assignment, assignment.assign_to, assignment.priority)
@@ -40,3 +47,8 @@ async def update(update_status: assignment_update):
     status = True if update_status.update == "Yes" else False
     status = sheet.update_status(update_status.id, status)
     return  {"status": status}
+
+@app.post("/view_assignments")
+async def view(name: name):
+    assignments = sheet.find_assignments(name.name)
+    return {"assignments": assignments}

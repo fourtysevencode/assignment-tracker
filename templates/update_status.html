@@ -4,9 +4,56 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Update Status</title>
+        <style>
 
+            body {
+                margin: 0;
+                padding: 0 60px;
+            }
+
+            nav {
+                display: flex;
+                unicode-bidi: isolate;
+                justify-content: center;
+                border-bottom: 1px solid #bbbbbb;
+                padding: 20px 0;
+            }
+
+            nav a {
+                margin: 0 15px;
+                text-decoration: none;
+                font-weight:400;
+                color:#000000;
+                transition: all ease 0.2s;
+                padding-top:20px;
+                font-size: 25px;
+                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+            }
+
+            nav a:hover {
+                color:#b4b4b4
+            }
+
+            h1 {
+                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
+                font-size: 50px;
+                padding: 50px
+            }
+
+            h2 {
+                font-family: Tahoma, 'Segoe UI', Geneva, Verdana, sans-serif;
+                font-size: 40px;
+                padding: 50px
+            }
+        </style>
 </head>
 <body>
+    <nav>
+        <a href = "/">Home</a>
+        <a href="/create-assignment">Create an Asignment</a>
+        <a href="/update-status">Update Status</a>
+        <a href="/view-assignments">View Assignments</a>
+    </nav>
     <h1>Update Status</h1>
     <input type="number" placeholder="id" id="id">
     <select title="Status">
