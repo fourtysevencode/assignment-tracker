@@ -1,3 +1,6 @@
 gspread
 uvicorn
 python-dotenv
+fastapi
+pydantic
+jinja2
