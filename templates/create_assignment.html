@@ -78,22 +78,65 @@
             <option value="Low">Low</option>
         </select>
 
+        <button id="suggest-priority">Suggest Priority</button>
         <button id="create">Create</button>
 
         <p id="result"></p>
+        <p id="suggestion-result"></p>
+        <p id="suggestion-reason"></p>
     </div>
 
     <script>
 
         const btn = document.querySelector("#create");
-        const URL = "http://localhost:8000";
+        const suggestBtn = document.querySelector("#suggest-priority");
+        const URL = window.location.origin;
         const result = document.querySelector("#result");
+        const suggestionResult = document.querySelector("#suggestion-result");
+        const suggestionReason = document.querySelector("#suggestion-reason");
+        const assignmentInput = document.querySelector("#assignment");
+        const prioritySelect = document.querySelector("#priority");
+
+        suggestBtn.addEventListener("click", async () => {
+            const assignment = assignmentInput.value.trim();
+            if (!assignment) {
+                suggestionResult.innerText = "Please enter an assignment first.";
+                suggestionReason.innerText = "";
+                return;
+            }
+
+            suggestionResult.innerText = "Getting priority suggestion...";
+            suggestionReason.innerText = "";
+            try {
+                const res = await fetch(`${URL}/suggest-priority`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        assignment: assignment
+                    })
+                });
+
+                const response = await res.json();
+                if (!res.ok) {
+                    suggestionResult.innerText = response.detail || "Could not get priority suggestion.";
+                    return;
+                }
+
+                prioritySelect.value = response.priority;
+                suggestionResult.innerText = `Suggested priority: ${response.priority}`;
+                suggestionReason.innerText = `Reason: ${response.reason}`;
+            } catch (error) {
+                suggestionResult.innerText = "Error: " + error.message;
+            }
+        });
 
         btn.addEventListener("click", async () => {
 
-            const assignment = document.querySelector("#assignment").value;
+            const assignment = assignmentInput.value;
             const assign_to = document.querySelector("#assign-to").value;
-            const priority = document.querySelector("#priority").value;
+            const priority = prioritySelect.value;
 
             try {
                 const res = await fetch(`${URL}/new-assignment`, {
